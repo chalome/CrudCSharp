@@ -7,18 +7,20 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
-
-
+using rappel.Controleur;
+using rappel.Modele;
 namespace rappel
 {
     public partial class Form1 : Form
     {
+        private RegistrationController controller;
+        private bool connected;
+
         public Form1()
         {
             InitializeComponent();
+            controller = new RegistrationController();
         }
-        MySqlConnection con = new MySqlConnection("server=localhost;port=3306;database=mycsharp;uid=root;pwd=");
-        bool connecte;
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -26,102 +28,165 @@ namespace rappel
             {
                 try
                 {
-                    if (con.State == ConnectionState.Closed)
-                    {
-                        con.Open();
-                        button1.Text = "se deconnecter";
-                        connecte = true;
-                    }
-
+                    controller.Connect();
+                    button1.Text = "se deconnecter";
+                    connected = true;
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message);
-
                 }
             }
             else
             {
-                con.Close();
+                controller.Disconnect();
                 button1.Text = "se connecter";
-                connecte = false;
-
+                connected = false;
             }
         }
 
-
-
         private void button2_Click(object sender, EventArgs e)
         {
-            if (connecte)
+            if (connected)
             {
-                MySqlCommand save = new MySqlCommand("insert into registration(nom,prenom,date,adresse,gender,country) values(@nom,@prenom,@date,@adresse,@gender,@country)", con);
-                //save.Parameters.AddWithValue("@id", textBox1.Text);
-                save.Parameters.AddWithValue("@nom", textBox2.Text);
-                save.Parameters.AddWithValue("@prenom", textBox3.Text);
-                save.Parameters.AddWithValue("@date", textBox4.Text);
-                save.Parameters.AddWithValue("@adresse", textBox6.Text);
-                save.Parameters.AddWithValue("@gender", comboBox1.SelectedItem.ToString());
-                save.Parameters.AddWithValue("@country", textBox5.Text);
-                save.ExecuteNonQuery();
-                save.Parameters.Clear();
-                MessageBox.Show("saved!!");
+                // Validate input fields
+                if (string.IsNullOrEmpty(textBox2.Text) || string.IsNullOrEmpty(textBox3.Text) ||
+                    string.IsNullOrEmpty(textBox4.Text) || string.IsNullOrEmpty(textBox6.Text) ||
+                    comboBox1.SelectedItem == null || string.IsNullOrEmpty(textBox5.Text))
+                {
+                    MessageBox.Show("Please fill in all fields.");
+                    return;
+                }
+
+                // Validate date format
+                DateTime date;
+                if (!DateTime.TryParse(textBox4.Text, out date))
+                {
+                    MessageBox.Show("Please enter a valid date.");
+                    return;
+                }
+
+                var registration = new Registration
+                {
+                    Nom = textBox2.Text,
+                    Prenom = textBox3.Text,
+                    Date = date,
+                    Adresse = textBox6.Text,
+                    Gender = comboBox1.SelectedItem.ToString(),
+                    Country = textBox5.Text
+                };
+                controller.AddRegistration(registration);
+                MessageBox.Show("Saved successfully!");
+            }
+            else
+            {
+                MessageBox.Show("Please connect to the database first.");
             }
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if (connecte)
+            if (connected)
             {
                 listView1.Items.Clear();
-                MySqlCommand show = new MySqlCommand("select * from registration ", con);
-                using (MySqlDataReader reader = show.ExecuteReader())
+                var registrations = controller.GetRegistrations();
+                foreach (var reg in registrations)
                 {
-                    while (reader.Read())
+                    listView1.Items.Add(new ListViewItem(new[]
                     {
-                        string ID = reader["id"].ToString();
-                        string NOM = reader["nom"].ToString();
-                        string PRENOM = reader["prenom"].ToString();
-                        string DATE = reader["date"].ToString();
-                        string ADRESSE = reader["adresse"].ToString();
-                        string GENDER = reader["gender"].ToString();
-                        string COUNTRY = reader["country"].ToString();
-                        listView1.Items.Add(new ListViewItem(new[] { ID, NOM, PRENOM, DATE,ADRESSE, GENDER, COUNTRY }));
-                    }
+                        reg.Id.ToString(), reg.Nom, reg.Prenom, reg.Date.ToString("yyyy-MM-dd"),
+                        reg.Adresse, reg.Gender, reg.Country
+                    }));
                 }
+            }
+            else
+            {
+                MessageBox.Show("Please connect to the database first.");
             }
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            if (connecte)
+            if (connected)
             {
-                MySqlCommand update = new MySqlCommand("update  registration set nom='" + textBox2.Text + "',prenom='" + textBox3.Text + "',date='" + textBox4.Text + "',adresse='" + textBox6.Text + "',gender='" + comboBox1.SelectedItem.ToString() + "',country='" + textBox5.Text + "'where id=" + textBox1.Text + "", con);
+                // Validate ID field
+                if (string.IsNullOrEmpty(textBox1.Text))
+                {
+                    MessageBox.Show("Please enter an ID.");
+                    return;
+                }
 
-                update.Parameters.AddWithValue("@id", textBox1.Text);
-                update.Parameters.AddWithValue("@nom", textBox2.Text);
-                update.Parameters.AddWithValue("@prenom", textBox3.Text);
-                update.Parameters.AddWithValue("@date", textBox4.Text);
-                update.Parameters.AddWithValue("@adresse", textBox6.Text);
-                update.Parameters.AddWithValue("@gender", comboBox1.SelectedItem.ToString());
-                update.Parameters.AddWithValue("@country", textBox5.Text);
-                update.ExecuteNonQuery();
-                update.Parameters.Clear(); 
-                MessageBox.Show("well done");
+                // Declare the variable separately
+                int id;
+                if (!int.TryParse(textBox1.Text, out id))
+                {
+                    MessageBox.Show("Please enter a valid ID.");
+                    return;
+                }
+
+
+                // Validate other fields
+                if (string.IsNullOrEmpty(textBox2.Text) || string.IsNullOrEmpty(textBox3.Text) ||
+                    string.IsNullOrEmpty(textBox4.Text) || string.IsNullOrEmpty(textBox6.Text) ||
+                    comboBox1.SelectedItem == null || string.IsNullOrEmpty(textBox5.Text))
+                {
+                    MessageBox.Show("Please fill in all fields.");
+                    return;
+                }
+
+                // Validate date format
+                 DateTime date;
+        if (!DateTime.TryParse(textBox4.Text, out date))
+        {
+            MessageBox.Show("Please enter a valid date.");
+            return;
+        }
+
+                var registration = new Registration
+                {
+                    Id = id,
+                    Nom = textBox2.Text,
+                    Prenom = textBox3.Text,
+                    Date = date,
+                    Adresse = textBox6.Text,
+                    Gender = comboBox1.SelectedItem.ToString(),
+                    Country = textBox5.Text
+                };
+                controller.UpdateRegistration(registration);
+                MessageBox.Show("Updated successfully!");
             }
             else
             {
-                MessageBox.Show("noooo");
+                MessageBox.Show("Please connect to the database first.");
             }
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
-            if (connecte)
+            if (connected)
             {
-                MySqlCommand delete = new MySqlCommand("delete  from registration where id="+textBox1.Text+"",con);
-                delete.ExecuteNonQuery();
-                MessageBox.Show("deleted");
+                // Validate ID field
+                if (string.IsNullOrEmpty(textBox1.Text))
+                {
+                    MessageBox.Show("Please enter an ID.");
+                    return;
+                }
+
+                // Declare the variable separately
+                int id;
+                if (!int.TryParse(textBox1.Text, out id))
+                {
+                    MessageBox.Show("Please enter a valid ID.");
+                    return;
+                }
+
+
+                controller.DeleteRegistration(id);
+                MessageBox.Show("Deleted successfully!");
+            }
+            else
+            {
+                MessageBox.Show("Please connect to the database first.");
             }
         }
 
@@ -132,9 +197,8 @@ namespace rappel
             textBox3.Text = "";
             textBox4.Text = "";
             textBox5.Text = "";
-            comboBox1.SelectedItem = "";
+            comboBox1.SelectedItem = null;
             textBox6.Text = "";
-
         }
 
         private void button7_Click(object sender, EventArgs e)
@@ -147,4 +211,5 @@ namespace rappel
 
         }
     }
+    
 }

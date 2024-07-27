@@ -23,3 +23,11 @@ C:\Users\Didier\Documents\C_Sharp\rappel\rappel\obj\x86\Debug\rappel.csprojResol
 C:\Users\Didier\Documents\C_Sharp\rappel\rappel\obj\x86\Debug\rappel.Form1.resources
 C:\Users\Didier\Documents\C_Sharp\rappel\rappel\obj\x86\Debug\rappel.Properties.Resources.resources
 C:\Users\Didier\Documents\C_Sharp\rappel\rappel\obj\x86\Debug\rappel.csproj.GenerateResource.Cache
+C:\Users\Didier\Documents\C_Sharp\CsharpCrud\rappel\obj\x86\Debug\rappel.exe
+C:\Users\Didier\Documents\C_Sharp\CsharpCrud\rappel\obj\x86\Debug\rappel.pdb
+C:\Users\Didier\Documents\C_Sharp\CsharpCrud\rappel\obj\x86\Debug\rappel.csprojResolveAssemblyReference.cache
+C:\Users\Didier\Documents\C_Sharp\CsharpCrud\rappel\obj\x86\Debug\rappel.Form1.resources
+C:\Users\Didier\Documents\C_Sharp\CsharpCrud\rappel\obj\x86\Debug\rappel.Properties.Resources.resources
+C:\Users\Didier\Documents\C_Sharp\CsharpCrud\rappel\obj\x86\Debug\rappel.csproj.GenerateResource.Cache
+C:\Users\Didier\Documents\C_Sharp\CsharpCrud\rappel\bin\Debug\rappel.exe
+C:\Users\Didier\Documents\C_Sharp\CsharpCrud\rappel\bin\Debug\rappel.pdb
